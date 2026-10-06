@@ -1,15 +1,26 @@
+# .github/workflows/supabase-heartbeat.yml  (in the thrift-facts repo)
+# Keeps the thrift-facts Supabase project from pausing with one tiny daily read.
+# Repo secrets required: THRIFT_URL, THRIFT_KEY (publishable or anon key).
+
 name: Supabase heartbeat
 
 on:
   schedule:
-    - cron: "0 8 * * *"   # daily at 8am UTC
-  workflow_dispatch: {}    # run manually from the Actions tab
+    - cron: "17 15 * * *"   # daily, 15:17 UTC (8:17 PDT / 7:17 PST)
+  workflow_dispatch:         # "Run workflow" button for manual tests
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Call heartbeat function
-        # Replace YOUR_PROJECT_REF with the new project's ref (the xxxx in https://xxxx.supabase.co)
+      - name: Ping thrift-facts
+        env:
+          SUPABASE_URL: ${{ secrets.THRIFT_URL }}
+          SUPABASE_KEY: ${{ secrets.THRIFT_KEY }}
         run: |
-          curl -sf -X POST "https://gffmnecxfdxtcamaknki.supabase.co/functions/v1/heartbeat"
+          # --fail-with-body: any non-2xx response fails the job, so GitHub emails you.
+          curl -sS --fail-with-body --retry 3 --retry-delay 10 \
+            "$SUPABASE_URL/rest/v1/heartbeat?select=*&limit=1" \
+            -H "apikey: $SUPABASE_KEY"
+          echo
+          echo "thrift-facts OK"
