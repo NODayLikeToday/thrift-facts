@@ -1,0 +1,15 @@
+name: Supabase heartbeat
+
+on:
+  schedule:
+    - cron: "0 8 * * *"   # daily at 8am UTC
+  workflow_dispatch: {}    # run manually from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call heartbeat function
+        # Replace YOUR_PROJECT_REF with the new project's ref (the xxxx in https://xxxx.supabase.co)
+        run: |
+          curl -sf -X POST "https://gffmnecxfdxtcamaknki.supabase.co/functions/v1/heartbeat"
